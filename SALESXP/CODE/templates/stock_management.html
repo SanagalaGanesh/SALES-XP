@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Saree Stock Management</title>
+    <style>
+        :root {
+            --primary: #2d4059;
+            --secondary: #3f888f;
+            --success: #28a745;
+            --danger: #dc3545;
+            --warning: #ffc107;
+            --light: #f8f9fa;
+            --dark: #212529;
+            --border: #dee2e6;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: #f8f9fa;
+            min-height: 100vh;
+            padding: 30px 20px;
+            color: var(--dark);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 15px rgba(0, 0, 0, 0.05);
+            padding: 30px;
+        }
+
+        h1 {
+            color: var(--primary);
+            margin-bottom: 30px;
+            font-size: 2rem;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            text-align: center;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .search-bar {
+            flex: 1;
+            max-width: 400px;
+            padding: 10px 15px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: 0.95rem;
+            transition: border-color 0.3s;
+        }
+
+        .search-bar:focus {
+            border-color: var(--secondary);
+            outline: none;
+        }
+
+        .btn {
+            padding: 8px 18px;
+            border: none;
+            border-radius: 6px;
+            font-weight: 500;
+            letter-spacing: 0.5px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-success { background: var(--success); color: white; }
+        .btn-danger { background: var(--danger); color: white; }
+        .btn-warning { background: var(--warning); color: var(--dark); }
+        .btn-teal { background: var(--secondary); color: white; }
+
+        .btn:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+        }
+
+        .stock-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 25px;
+            border: 1px solid var(--border);
+        }
+
+        .stock-table th {
+            background: var(--primary);
+            color: white;
+            font-weight: 600;
+            padding: 14px;
+            text-align: left;
+        }
+
+        .stock-table td {
+            padding: 12px;
+            border-top: 1px solid var(--border);
+        }
+
+        .stock-table tr:hover {
+            background-color: rgba(63, 136, 143, 0.03);
+        }
+
+        .barcode {
+            font-family: monospace;
+            color: var(--dark);
+            font-size: 0.95rem;
+        }
+
+        .pagination {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 25px;
+        }
+
+        .pagination button {
+            padding: 6px 12px;
+            border: 1px solid var(--border);
+            background: white;
+            color: var(--dark);
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .pagination button.active {
+            background: var(--secondary);
+            color: white;
+            border-color: var(--secondary);
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 25px;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        }
+
+        .modal-content h2 {
+            color: var(--primary);
+            margin-bottom: 20px;
+            font-size: 1.4rem;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 500;
+            color: var(--dark);
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: 0.95rem;
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+
+        .form-group input:focus {
+            border-color: var(--secondary);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(63, 136, 143, 0.15);
+        }
+
+        .close-modal {
+            float: right;
+            font-size: 1.4rem;
+            color: var(--dark);
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+
+        .close-modal:hover {
+            color: var(--danger);
+        }
+
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: var(--secondary);
+            font-weight: 500;
+        }
+
+        @media (max-width: 768px) {
+            .container { padding: 20px; }
+            .controls { flex-direction: column; }
+            .search-bar { max-width: 100%; width: 100%; }
+            .stock-table th, .stock-table td { padding: 10px; font-size: 0.9rem; }
+            .btn { width: 100%; margin-top: 8px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>STOCK MANAGEMENT</h1>
+
+        <div class="controls">
+            <input type="text" class="search-bar" id="searchBar" placeholder="Search inventory...">
+            <button class="btn btn-primary" onclick="openAddModal()">Add New Saree</button>
+            <button class="btn btn-teal" onclick="stockManager.addSelectedToBilling()">Add Selected to Billing</button>
+            <button class="btn btn-warning" onclick="stockManager.refreshSarees()">Refresh</button>
+            <button class="btn btn-danger" onclick="window.location.href='/logout'">Logout</button>
+        </div>
+
+        <table class="stock-table">
+            <thead>
+                <tr>
+                    <th><input type="checkbox" id="selectAll" onclick="stockManager.toggleSelectAll()"></th>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Fabric</th>
+                    <th>Color</th>
+                    <th>Price</th>
+                    <th>Stock</th>
+                    <th>Barcode</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="stockBody">
+                <tr><td colspan="9" class="loading">Loading sarees...</td></tr>
+            </tbody>
+        </table>
+
+        <div class="pagination" id="pagination"></div>
+
+        <div class="modal" id="sareeModal">
+            <div class="modal-content">
+                <span class="close-modal" onclick="closeModal()">×</span>
+                <h2 id="modalTitle">Add New Saree</h2>
+                <form id="sareeForm">
+                    <div class="form-group">
+                        <label>Saree ID</label>
+                        <input type="text" id="sareeId" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label>Name</label>
+                        <input type="text" id="sareeName" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Fabric</label>
+                        <input type="text" id="fabric" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Color</label>
+                        <input type="text" id="color" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Price (₹)</label>
+                        <input type="number" id="price" step="0.01" min="0" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Stock Quantity</label>
+                        <input type="number" id="stockQty" min="0" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Barcode</label>
+                        <input type="text" id="barcode" readonly>
+                    </div>
+                    <button type="submit" class="btn btn-success">Save Details</button>
+                </form>
+            </div>
+        </div>
+
+        <div class="modal" id="stockUpdateModal">
+            <div class="modal-content">
+                <span class="close-modal" onclick="closeStockModal()">×</span>
+                <h2>Update Stock Level</h2>
+                <form id="stockUpdateForm">
+                    <div class="form-group">
+                        <label>Saree ID</label>
+                        <input type="text" id="updateSareeId" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label>New Stock Quantity</label>
+                        <input type="number" id="newStockQty" min="0" required>
+                    </div>
+                    <button type="submit" class="btn btn-success">Update Stock</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class StockManager {
+            constructor() {
+                this.itemsPerPage = 10;
+                this.currentPage = 1;
+                this.API_URL = 'http://localhost:5000';
+                this.sarees = [];
+                this.selectedSarees = new Set();
+                this.isLoading = false;
+                this.fetchSarees();
+                this.initEventListeners();
+            }
+
+            initEventListeners() {
+                document.getElementById('sareeForm').addEventListener('submit', (e) => this.saveSaree(e));
+                document.getElementById('stockUpdateForm').addEventListener('submit', (e) => this.updateStock(e));
+                document.getElementById('searchBar').addEventListener('input', () => this.renderTable());
+            }
+
+            generateBarcode() {
+                return 'SAR' + Math.random().toString(36).substr(2, 9).toUpperCase();
+            }
+
+            async fetchSarees() {
+                if (this.isLoading) return;
+                this.isLoading = true;
+                this.showLoadingState();
+
+                try {
+                    const response = await fetch(`${this.API_URL}/sarees`);
+                    if (!response.ok) {
+                        const errorData = await response.json();
+                        throw new Error(errorData.error || `HTTP error! Status: ${response.status}`);
+                    }
+                    this.sarees = await response.json();
+                    this.renderTable();
+                } catch (error) {
+                    console.error('Fetch sarees error:', error);
+                    alert('Error fetching sarees: ' + error.message);
+                    this.showErrorState();
+                } finally {
+                    this.isLoading = false;
+                }
+            }
+
+            async refreshSarees() {
+                await this.fetchSarees();
+            }
+
+            async saveSaree(e) {
+                e.preventDefault();
+                const saree = {
+                    name: document.getElementById('sareeName').value,
+                    fabric: document.getElementById('fabric').value,
+                    color: document.getElementById('color').value,
+                    price: parseFloat(document.getElementById('price').value),
+                    stock_quantity: parseInt(document.getElementById('stockQty').value),
+                    barcode: document.getElementById('sareeId').value ? document.getElementById('barcode').value : this.generateBarcode()
+                };
+                const sareeId = document.getElementById('sareeId').value;
+
+                try {
+                    const method = sareeId ? 'PUT' : 'POST';
+                    const url = sareeId ? `${this.API_URL}/sarees/${sareeId}` : `${this.API_URL}/sarees`;
+                    const response = await fetch(url, {
+                        method,
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(saree)
+                    });
+                    if (!response.ok) {
+                        const errorData = await response.json();
+                        throw new Error(errorData.error || `HTTP error! Status: ${response.status}`);
+                    }
+                    const data = await response.json();
+                    alert(data.message);
+                    this.fetchSarees();
+                    closeModal();
+                } catch (error) {
+                    console.error('Save saree error:', error);
+                    alert('Error saving saree: ' + error.message);
+                }
+            }
+
+            async updateStock(e) {
+                e.preventDefault();
+                const sareeId = document.getElementById('updateSareeId').value;
+                const stockQty = parseInt(document.getElementById('newStockQty').value);
+
+                try {
+                    const response = await fetch(`${this.API_URL}/sarees/${sareeId}/stock`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ stock_quantity: stockQty })
+                    });
+                    if (!response.ok) {
+                        const errorData = await response.json();
+                        throw new Error(errorData.error || `HTTP error! Status: ${response.status}`);
+                    }
+                    const data = await response.json();
+                    alert(data.message);
+                    this.fetchSarees();
+                    closeStockModal();
+                } catch (error) {
+                    console.error('Update stock error:', error);
+                    alert('Error updating stock: ' + error.message);
+                }
+            }
+
+            async deleteSaree(sareeId) {
+                if (!confirm('Are you sure you want to delete this saree?')) return;
+
+                try {
+                    const response = await fetch(`${this.API_URL}/sarees/${sareeId}`, {
+                        method: 'DELETE'
+                    });
+                    if (!response.ok) {
+                        const errorData = await response.json();
+                        throw new Error(errorData.error || `HTTP error! Status: ${response.status}`);
+                    }
+                    const data = await response.json();
+                    alert(data.message);
+                    this.fetchSarees();
+                } catch (error) {
+                    console.error('Delete saree error:', error);
+                    alert('Error deleting saree: ' + error.message);
+                }
+            }
+
+            toggleSelect(sareeId) {
+                if (this.selectedSarees.has(sareeId)) {
+                    this.selectedSarees.delete(sareeId);
+                } else {
+                    this.selectedSarees.add(sareeId);
+                }
+                this.renderTable();
+            }
+
+            toggleSelectAll() {
+                const selectAllCheckbox = document.getElementById('selectAll');
+                const paginatedSarees = this.getPaginatedSarees();
+                if (selectAllCheckbox.checked) {
+                    paginatedSarees.forEach(s => this.selectedSarees.add(s.saree_id));
+                } else {
+                    paginatedSarees.forEach(s => this.selectedSarees.delete(s.saree_id));
+                }
+                this.renderTable();
+            }
+
+            addSelectedToBilling() {
+                if (this.selectedSarees.size === 0) {
+                    alert('Please select at least one saree to add to billing.');
+                    return;
+                }
+
+                const billingItems = JSON.parse(localStorage.getItem('billingItems')) || [];
+                this.selectedSarees.forEach(sareeId => {
+                    const saree = this.sarees.find(s => s.saree_id === sareeId);
+                    if (saree && saree.stock_quantity > 0) {
+                        billingItems.push({ ...saree, quantity: 1, discount: 0, amount: saree.price });
+                    } else if (saree) {
+                        alert(`Saree ${saree.name} is out of stock!`);
+                    }
+                });
+
+                localStorage.setItem('billingItems', JSON.stringify(billingItems));
+                this.selectedSarees.clear();
+                this.renderTable();
+                window.location.href = '/billing_desk';
+            }
+
+            getPaginatedSarees() {
+                const search = document.getElementById('searchBar').value.toLowerCase();
+                const filteredSarees = this.sarees.filter(s =>
+                    s.name.toLowerCase().includes(search) ||
+                    s.fabric.toLowerCase().includes(search) ||
+                    s.color.toLowerCase().includes(search)
+                );
+                const start = (this.currentPage - 1) * this.itemsPerPage;
+                const end = start + this.itemsPerPage;
+                return filteredSarees.slice(start, end);
+            }
+
+            showLoadingState() {
+                const tbody = document.getElementById('stockBody');
+                tbody.innerHTML = `<tr><td colspan="9" class="loading">Loading sarees...</td></tr>`;
+            }
+
+            showErrorState() {
+                const tbody = document.getElementById('stockBody');
+                tbody.innerHTML = `<tr><td colspan="9" class="loading">Error loading sarees. Please try refreshing.</td></tr>`;
+            }
+
+            renderTable() {
+                const paginatedSarees = this.getPaginatedSarees();
+                const tbody = document.getElementById('stockBody');
+                if (paginatedSarees.length === 0 && !this.isLoading) {
+                    tbody.innerHTML = `<tr><td colspan="9" class="loading">No sarees found.</td></tr>`;
+                } else {
+                    tbody.innerHTML = paginatedSarees.map(s => `
+                        <tr>
+                            <td><input type="checkbox" ${this.selectedSarees.has(s.saree_id) ? 'checked' : ''} 
+                                onclick="stockManager.toggleSelect(${s.saree_id})"></td>
+                            <td>${s.saree_id}</td>
+                            <td>${s.name}</td>
+                            <td>${s.fabric}</td>
+                            <td>${s.color}</td>
+                            <td>₹${parseFloat(s.price).toFixed(2)}</td>
+                            <td>${s.stock_quantity}</td>
+                            <td class="barcode">${s.barcode}</td>
+                            <td>
+                                <button class="btn btn-success" onclick="openEditModal(${s.saree_id})">Edit</button>
+                                <button class="btn btn-danger" onclick="stockManager.deleteSaree(${s.saree_id})">Delete</button>
+                                <button class="btn btn-warning" onclick="openStockUpdateModal(${s.saree_id})">Stock</button>
+                            </td>
+                        </tr>
+                    `).join('');
+                }
+
+                this.renderPagination();
+            }
+
+            renderPagination() {
+                const search = document.getElementById('searchBar').value.toLowerCase();
+                const filteredSarees = this.sarees.filter(s =>
+                    s.name.toLowerCase().includes(search) ||
+                    s.fabric.toLowerCase().includes(search) ||
+                    s.color.toLowerCase().includes(search)
+                );
+                const pageCount = Math.ceil(filteredSarees.length / this.itemsPerPage);
+                const pagination = document.getElementById('pagination');
+                pagination.innerHTML = '';
+                for (let i = 1; i <= pageCount; i++) {
+                    const btn = document.createElement('button');
+                    btn.textContent = i;
+                    btn.className = i === this.currentPage ? 'active' : '';
+                    btn.onclick = () => {
+                        this.currentPage = i;
+                        this.renderTable();
+                    };
+                    pagination.appendChild(btn);
+                }
+            }
+        }
+
+        const stockManager = new StockManager();
+
+        function openAddModal() {
+            document.getElementById('modalTitle').textContent = 'Add New Saree';
+            document.getElementById('sareeId').value = '';
+            document.getElementById('sareeName').value = '';
+            document.getElementById('fabric').value = '';
+            document.getElementById('color').value = '';
+            document.getElementById('price').value = '';
+            document.getElementById('stockQty').value = '';
+            document.getElementById('barcode').value = stockManager.generateBarcode();
+            document.getElementById('sareeModal').style.display = 'flex';
+        }
+
+        function openEditModal(id) {
+            const saree = stockManager.sarees.find(s => s.saree_id === id);
+            if (!saree) {
+                alert('Saree not found!');
+                return;
+            }
+            document.getElementById('modalTitle').textContent = 'Edit Saree';
+            document.getElementById('sareeId').value = saree.saree_id;
+            document.getElementById('sareeName').value = saree.name;
+            document.getElementById('fabric').value = saree.fabric;
+            document.getElementById('color').value = saree.color;
+            document.getElementById('price').value = parseFloat(saree.price).toFixed(2);
+            document.getElementById('stockQty').value = saree.stock_quantity;
+            document.getElementById('barcode').value = saree.barcode;
+            document.getElementById('sareeModal').style.display = 'flex';
+        }
+
+        function openStockUpdateModal(id) {
+            const saree = stockManager.sarees.find(s => s.saree_id === id);
+            if (!saree) {
+                alert('Saree not found!');
+                return;
+            }
+            document.getElementById('updateSareeId').value = saree.saree_id;
+            document.getElementById('newStockQty').value = saree.stock_quantity;
+            document.getElementById('stockUpdateModal').style.display = 'flex';
+        }
+
+        function closeModal() {
+            document.getElementById('sareeModal').style.display = 'none';
+        }
+
+        function closeStockModal() {
+            document.getElementById('stockUpdateModal').style.display = 'none';
+        }
+    </script>
+</body>
+</html>

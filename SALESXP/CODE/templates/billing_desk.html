@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced Billing Desk</title>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --success-color: #27ae60;
+            --danger-color: #e74c3c;
+            --warning-color: #f1c40f;
+            --text-color: #2c3e50;
+            --border-color: #bdc3c7;
+            --hover-lightness: 90%;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+        }
+
+        body {
+            background: #f8f9fa;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+            padding: 2rem 1rem;
+            color: var(--text-color);
+        }
+
+        .container {
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+            width: 100%;
+            max-width: 1200px;
+            padding: 2rem;
+            margin: 0 auto;
+        }
+
+        h2 {
+            text-align: center;
+            margin-bottom: 2rem;
+            color: var(--primary-color);
+            font-size: 2rem;
+        }
+
+        .customer-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: var(--primary-color);
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.2s;
+        }
+
+        .input-group input:focus {
+            outline: none;
+            border-color: var(--secondary-color);
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
+        }
+
+        .billing-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 2rem 0;
+            background: #fff;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .billing-table th,
+        .billing-table td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+
+        .billing-table th {
+            background: var(--primary-color);
+            color: white;
+            font-weight: 500;
+        }
+
+        .billing-table input {
+            width: 100%;
+            padding: 0.5rem;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            font-size: 0.9rem;
+        }
+
+        .delete-row {
+            color: var(--danger-color);
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .total-price {
+            text-align: right;
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--success-color);
+            margin: 2rem 0;
+            padding: 1rem;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: background 0.2s;
+        }
+
+        .btn:hover {
+            filter: brightness(var(--hover-lightness));
+        }
+
+        .btn-primary { background: var(--secondary-color); color: white; }
+        .btn-success { background: var(--success-color); color: white; }
+        .btn-danger { background: var(--danger-color); color: white; }
+        .btn-warning { background: var(--warning-color); color: var(--text-color); }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            width: 90%;
+            max-width: 600px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        #billModal .modal-content {
+            text-align: center;
+        }
+
+        #billModal pre {
+            text-align: left;
+            white-space: pre-wrap;
+            background: #f8f9fa;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+        }
+
+        @media (max-width: 768px) {
+            .container { padding: 1.5rem; }
+            .customer-details { grid-template-columns: 1fr; }
+            .billing-table th, .billing-table td { padding: 0.75rem; }
+        }
+
+        /* Print-specific styles */
+        @media print {
+            body * {
+                visibility: hidden;
+            }
+            #printableBill, #printableBill * {
+                visibility: visible;
+            }
+            #printableBill {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Advanced Billing Desk</h2>
+
+        <section class="customer-details">
+            <div class="input-group">
+                <label>Customer Name</label>
+                <input type="text" id="customerName" placeholder="Enter customer name" required>
+            </div>
+            <div class="input-group">
+                <label>Customer Number</label>
+                <input type="tel" id="customerNumber" placeholder="Enter 10-digit number" required>
+            </div>
+            <div class="input-group">
+                <label>Salesperson ID</label>
+                <input type="text" id="spId" placeholder="Enter salesperson ID" required>
+            </div>
+        </section>
+
+        <table class="billing-table">
+            <thead>
+                <tr>
+                    <th>Product Name</th>
+                    <th>Quantity</th>
+                    <th>Price (₹)</th>
+                    <th>Discount (%)</th>
+                    <th>Amount (₹)</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody id="billingBody"></tbody>
+        </table>
+        <button class="btn btn-primary" onclick="addRow()">+ Add Product</button>
+
+        <section class="payment-options">
+            <div class="payment-option">
+                <input type="radio" name="payment" id="cash" value="cash" required>
+                <label for="cash">Cash</label>
+            </div>
+            <div class="payment-option">
+                <input type="radio" name="payment" id="card" value="card">
+                <label for="card">Card</label>
+            </div>
+            <div class="payment-option">
+                <input type="radio" name="payment" id="upi" value="upi">
+                <label for="upi">UPI</label>
+            </div>
+        </section>
+
+        <div class="total-price">
+            Total: ₹<span id="totalPrice">0.00</span>
+        </div>
+
+        <div class="action-buttons">
+            <button class="btn btn-success" onclick="generateBill()">📄 Generate Bill</button>
+            <button class="btn btn-primary" onclick="saveTransaction()">💾 Save</button>
+            <button class="btn btn-danger" onclick="cancelTransaction()">❌ Cancel</button>
+            <button class="btn btn-primary" onclick="window.location.href='/stock_management'">🔙 Stock</button>
+            <button class="btn btn-danger" onclick="window.location.href='/'">Logout</button>
+        </div>
+
+        <div class="modal" id="billModal">
+            <div class="modal-content">
+                <h3>Generated Bill</h3>
+                <pre id="billSummary"></pre>
+                <div class="action-buttons">
+                    <button class="btn btn-success" onclick="confirmBill()">OK</button>
+                    <button class="btn btn-warning" onclick="printBill()">🖨️ Print</button>
+                    <button class="btn btn-danger" onclick="cancelBill()">Cancel</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Hidden div for printing -->
+        <div id="printableBill" style="display: none;"></div>
+    </div>
+
+    <script>
+        class BillingSystem {
+            constructor() {
+                this.API_URL = 'http://localhost:5000';
+                this.billingItems = JSON.parse(localStorage.getItem('billingItems')) || [];
+                this.loadBillingItems();
+                this.initEventListeners();
+            }
+
+            initEventListeners() {
+                document.addEventListener('input', e => {
+                    if (e.target.matches('.quantity, .price, .discount')) {
+                        this.calculateRow(e.target.closest('tr'));
+                    }
+                });
+            }
+
+            calculateRow(row) {
+                const quantity = parseFloat(row.querySelector('.quantity').value) || 0;
+                const price = parseFloat(row.querySelector('.price').value) || 0;
+                const discount = parseFloat(row.querySelector('.discount').value) || 0;
+
+                const totalBeforeDiscount = quantity * price;
+                const discountAmount = totalBeforeDiscount * (discount / 100);
+                const finalAmount = totalBeforeDiscount - discountAmount;
+
+                row.querySelector('.amount').value = finalAmount.toFixed(2);
+                this.updateTotal();
+            }
+
+            updateTotal() {
+                const total = Array.from(document.querySelectorAll('.amount'))
+                    .reduce((sum, input) => sum + (parseFloat(input.value) || 0), 0);
+                document.getElementById('totalPrice').textContent = total.toFixed(2);
+            }
+
+            addRow(item = null) {
+                const newRow = document.createElement('tr');
+                newRow.innerHTML = `
+                    <td><input type="text" class="product-name" placeholder="Enter product name" value="${item?.name || ''}"></td>
+                    <td><input type="number" class="quantity" min="1" value="${item?.quantity || 1}"></td>
+                    <td><input type="number" class="price" step="0.01" min="0" value="${item?.price || 0}"></td>
+                    <td><input type="number" class="discount" step="0.01" min="0" max="100" value="${item?.discount || 0}"></td>
+                    <td><input type="number" class="amount" readonly value="0.00"></td>
+                    <td><span class="delete-row" onclick="billingSystem.deleteRow(this)">✕</span></td>
+                `;
+                document.getElementById('billingBody').appendChild(newRow);
+                this.calculateRow(newRow);
+            }
+
+            deleteRow(button) {
+                const row = button.closest('tr');
+                if (document.querySelectorAll('#billingBody tr').length > 1) {
+                    row.remove();
+                    this.updateTotal();
+                } else {
+                    alert("Cannot delete the last row.");
+                }
+            }
+
+            loadBillingItems() {
+                const tbody = document.getElementById('billingBody');
+                tbody.innerHTML = '';
+                if (this.billingItems.length === 0) {
+                    this.addRow();
+                } else {
+                    this.billingItems.forEach(item => this.addRow(item));
+                }
+            }
+
+            async updateStock(sareeId, newStockQty) {
+                try {
+                    const response = await fetch(`${this.API_URL}/sarees/${sareeId}/stock`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ stock_quantity: newStockQty })
+                    });
+                    if (!response.ok) {
+                        const errorData = await response.json();
+                        throw new Error(errorData.error || `HTTP error! Status: ${response.status}`);
+                    }
+                    console.log(`Stock updated for saree ID ${sareeId} to ${newStockQty}`);
+                } catch (error) {
+                    console.error('Error updating stock:', error);
+                    throw error;
+                }
+            }
+
+            async generateBill() {
+                const customerName = document.getElementById('customerName').value;
+                const customerNumber = document.getElementById('customerNumber').value;
+                const spId = document.getElementById('spId').value;
+                const payment = document.querySelector('input[name="payment"]:checked');
+                const rows = document.querySelectorAll('#billingBody tr');
+
+                if (!customerName || !customerNumber || !spId || !payment || rows.length === 0) {
+                    alert('Please fill all required fields and add at least one product.');
+                    return;
+                }
+                if (!/^\d{10}$/.test(customerNumber)) {
+                    alert('Customer number must be a 10-digit number.');
+                    return;
+                }
+
+                let summary = `SALESXP\n\nCustomer: ${customerName}\nNumber: ${customerNumber}\nSalesperson ID: ${spId}\nPayment: ${payment.value}\n\nItems:\n`;
+                const stockUpdates = [];
+                const billingItems = JSON.parse(localStorage.getItem('billingItems')) || [];
+
+                for (const row of rows) {
+                    const product = row.querySelector('.product-name').value;
+                    const qty = parseInt(row.querySelector('.quantity').value);
+                    const price = parseFloat(row.querySelector('.price').value);
+                    const discount = parseFloat(row.querySelector('.discount').value);
+                    const amount = row.querySelector('.amount').value;
+                    summary += `${product} - Qty: ${qty}, Price: ₹${price}, Discount: ${discount}%, Amount: ₹${amount}\n`;
+
+                    const item = billingItems.find(i => i.name === product);
+                    if (item) {
+                        const newStockQty = item.stock_quantity - qty;
+                        if (newStockQty < 0) {
+                            alert(`Insufficient stock for ${product}. Available: ${item.stock_quantity}, Requested: ${qty}`);
+                            return;
+                        }
+                        stockUpdates.push({ sareeId: item.saree_id, newStockQty, quantity: qty, price, discount, amount });
+                    }
+                }
+
+                summary += `\nTotal: ₹${document.getElementById('totalPrice').textContent}`;
+                document.getElementById('billSummary').textContent = summary;
+                document.getElementById('billModal').style.display = 'flex';
+
+                this.pendingStockUpdates = stockUpdates;
+            }
+
+            async confirmBill() {
+                if (!this.pendingStockUpdates) return;
+
+                try {
+                    // Update stock
+                    for (const update of this.pendingStockUpdates) {
+                        await this.updateStock(update.sareeId, update.newStockQty);
+                    }
+
+                    // Record transaction
+                    const transactionData = {
+                        customer_name: document.getElementById('customerName').value,
+                        customer_number: document.getElementById('customerNumber').value,
+                        salesperson_id: document.getElementById('spId').value,
+                        payment_method: document.querySelector('input[name="payment"]:checked').value,
+                        total: parseFloat(document.getElementById('totalPrice').textContent),
+                        items: this.pendingStockUpdates.map(update => ({
+                            saree_id: update.sareeId,
+                            quantity: update.quantity,
+                            price: update.price,
+                            discount: update.discount,
+                            amount: update.amount
+                        }))
+                    };
+
+                    const response = await fetch(`${this.API_URL}/transactions`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(transactionData)
+                    });
+                    if (!response.ok) {
+                        const errorData = await response.json();
+                        throw new Error(errorData.error || `HTTP error! Status: ${response.status}`);
+                    }
+                    const data = await response.json();
+                    alert(data.message);
+
+                    localStorage.removeItem('billingItems');
+                    this.cancelTransaction();
+                    document.getElementById('billModal').style.display = 'none';
+                } catch (error) {
+                    console.error('Error in confirmBill:', error);
+                    alert('Error processing bill: ' + error.message);
+                }
+            }
+
+            printBill() {
+                const billContent = document.getElementById('billSummary').textContent;
+                const printableArea = document.getElementById('printableBill');
+                printableArea.innerHTML = `
+                    <h2 style="text-align: center; color: #2c3e50;">SALESXP</h2>
+                    <pre style="font-family: 'Segoe UI', sans-serif; font-size: 14px; white-space: pre-wrap;">${billContent}</pre>
+                `;
+                printableArea.style.display = 'block';
+                window.print();
+                printableArea.style.display = 'none';
+            }
+
+            cancelBill() {
+                this.cancelTransaction();
+                document.getElementById('billModal').style.display = 'none';
+            }
+
+            saveTransaction() {
+                const data = {
+                    customerName: document.getElementById('customerName').value,
+                    customerNumber: document.getElementById('customerNumber').value,
+                    spId: document.getElementById('spId').value,
+                    payment: document.querySelector('input[name="payment"]:checked')?.value,
+                    items: Array.from(document.querySelectorAll('#billingBody tr')).map(row => ({
+                        product: row.querySelector('.product-name').value,
+                        quantity: row.querySelector('.quantity').value,
+                        price: row.querySelector('.price').value,
+                        discount: row.querySelector('.discount').value,
+                        amount: row.querySelector('.amount').value
+                    })),
+                    total: document.getElementById('totalPrice').textContent
+                };
+
+                if (!data.customerName || !data.customerNumber || !data.spId || !data.payment || data.items.length === 0) {
+                    alert('Please fill all required fields before saving.');
+                    return;
+                }
+
+                localStorage.setItem('lastTransaction', JSON.stringify(data));
+                alert('Transaction saved successfully!');
+            }
+
+            cancelTransaction() {
+                document.getElementById('customerName').value = '';
+                document.getElementById('customerNumber').value = '';
+                document.getElementById('spId').value = '';
+                document.querySelectorAll('input[name="payment"]').forEach(opt => opt.checked = false);
+                this.billingItems = [];
+                localStorage.removeItem('billingItems');
+                this.loadBillingItems();
+                document.getElementById('totalPrice').textContent = '0.00';
+            }
+        }
+
+        const billingSystem = new BillingSystem();
+
+        function addRow() { billingSystem.addRow(); }
+        function deleteRow(button) { billingSystem.deleteRow(button); }
+        function generateBill() { billingSystem.generateBill(); }
+        function saveTransaction() { billingSystem.saveTransaction(); }
+        function cancelTransaction() { billingSystem.cancelTransaction(); }
+        function confirmBill() { billingSystem.confirmBill(); }
+        function cancelBill() { billingSystem.cancelBill(); }
+        function printBill() { billingSystem.printBill(); }
+    </script>
+</body>
+</html>
