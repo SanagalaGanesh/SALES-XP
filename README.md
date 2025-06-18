@@ -1,6 +1,6 @@
 #  SalesXP – Smart Sales Commission & Performance Tracker
 
-SalesXP is a web-based system designed to automate sales tracking, calculate commissions, and monitor performance for retail businesses. 
+SalesXP [Sales Experience Point] is a web-based system designed to automate sales tracking, calculate commissions, and monitor performance for retail businesses. 
 It eliminates manual errors, enhances transparency, and motivates sales teams through structured incentives and real-time analytics.
 
 # VISON
@@ -116,6 +116,11 @@ We plan to:
 -  Onboard **5–10 early adopters** for feedback and refinement.
 -  Build a **scalable cloud infrastructure** (e.g., AWS/GCP + Docker + CI/CD).
 -  Pitch **SalesXP** as an **affordable retail SaaS solution** under a freemium or subscription model.
+
+---
+
+Stay tuned for more updates as we continue to innovate and improve SALESXP!
+
 
 
 
