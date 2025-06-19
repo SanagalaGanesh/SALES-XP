@@ -53,8 +53,8 @@ I designed SalesXP to be **scalable, secure, and intuitive**, with the ambition 
 <img width="1470" alt="Screenshot 2025-04-04 at 1 15 22 PM" src="https://github.com/user-attachments/assets/5efac840-6ec4-414a-a439-db1eefceac8e" />
 
 ## Billing Desk
-  <img width="1470" alt="Screenshot 2025-04-04 at 1 14 58 PM" src="https://github.com/user-attachments/assets/8899567b-f167-40de-96ba-62363fa6c1b7" />
-<img width="1470" alt="Screenshot 2025-04-04 at 1 15 08 PM" src="https://github.com/user-attachments/assets/0a8c1b9a-a8a9-4820-bf08-62701ef585c6" />
+  <img width="1470" alt="Screenshot 2025-04-04 at 1 14 58 PM" src="https://github.com/user-attachments/assets/bba8de8e-0677-4389-8473-584efd2af1aa" />
+<img width="1470" alt="Screenshot 2025-04-04 at 1 15 08 PM" src="https://github.com/user-attachments/assets/1d2e6b0e-b83c-42e2-a6e3-b05360b41226" />
 
 
 ## Stock Management
@@ -135,8 +135,10 @@ Stay tuned for more updates as we continue to innovate and improve SALESXP!
 
 
 
+![WhatsApp Image 2025-06-19 at 12 39 00 (1)]()
 
 
+![WhatsApp Image 2025-06-19 at 12 39 00]()
 
 
 
