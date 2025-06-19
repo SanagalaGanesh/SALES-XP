@@ -135,23 +135,6 @@ Stay tuned for more updates as we continue to innovate and improve SALESXP!
 
 
 
-![WhatsApp Image 2025-06-19 at 12 39 00 (1)]()
-
-
-![WhatsApp Image 2025-06-19 at 12 39 00]()
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
