@@ -3,7 +3,7 @@
 SalesXP [Sales Experience Point] is a web-based system designed to automate sales tracking, calculate commissions, and monitor performance for retail businesses. 
 It eliminates manual errors, enhances transparency, and motivates sales teams through structured incentives and real-time analytics.
 
-# VISON
+# VISION
 
 **SalesXP** was born from a deep understanding of the everyday struggles faced by sales teams and store managers in retail businesses. In traditional settings, sales commissions are either tracked manually or overlooked entirely—leading to errors, lack of motivation, unfair rewards, and lost revenue. Recognizing this gap, we envisioned a **smart, transparent, and automated system** that not only tracks sales but also celebrates performance, encourages competition, and aligns incentives with business goals.
 
